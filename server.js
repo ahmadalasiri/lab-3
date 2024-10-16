@@ -23,7 +23,7 @@ const db = new sqlite3.Database(":memory:", (err) => {
     )`,
     (err) => {
       if (err) {
-        console.log("Error creating users table: ", err.message);
+        console.log(err.message);
       }
     }
   );
@@ -86,7 +86,7 @@ app.get("/", (req, res) => {
   res.redirect("/LOGIN");
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
