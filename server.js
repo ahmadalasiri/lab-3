@@ -2,7 +2,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
-const sqlite3 = require("sqlite3");
+const sqlite3 = require("sqlite3").verbose();
+const db = new sqlite3.Database(":memory:");
 
 dotenv.config();
 
@@ -10,22 +11,12 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 
-const db = new sqlite3.Database(":memory:", (err) => {
-  if (err) {
-    return console.log(err.message);
-  }
-
+db.serialize(() => {
   db.run(
     `CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL
-    )`,
-    (err) => {
-      if (err) {
-        console.log(err.message);
-      }
-    }
+    )`
   );
 });
 
@@ -71,11 +62,7 @@ app.post("/LOGIN", (req, res) => {
       return res.render("fail");
     }
 
-    const token = jwt.sign(
-      { username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET);
 
     console.log("JWT Token:", token);
     res.render("start");
